@@ -1,5 +1,7 @@
 # Programmers Local Runner
 
+[GitHub](https://github.com/ghghtygh/programmers-importer)
+
 프로그래머스 URL에서 Java 기본 코드와 공개 입출력 예제를 가져와 `Solution.java`, JUnit 5 매개변수화 테스트를 생성하는 CLI입니다.
 
 ## 빠른 시작

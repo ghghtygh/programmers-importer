@@ -1,0 +1,63 @@
+{
+  "name": "programmers-local-runner",
+  "displayName": "Programmers Local Runner",
+  "description": "프로그래머스 문제 URL로부터 Solution.java와 JUnit 5 테스트를 자동 생성합니다.",
+  "version": "0.1.0",
+  "publisher": "programmers-local-runner",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other",
+    "Testing"
+  ],
+  "activationEvents": [
+    "onCommand:programmers.importProblem",
+    "onCommand:programmers.importProblemFromClipboard"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "programmers.importProblem",
+        "title": "Programmers: Import Problem",
+        "category": "Programmers"
+      },
+      {
+        "command": "programmers.importProblemFromClipboard",
+        "title": "Programmers: Import Problem from Clipboard",
+        "category": "Programmers"
+      }
+    ],
+    "configuration": {
+      "title": "Programmers Local Runner",
+      "properties": {
+        "programmers.cliPath": {
+          "type": "string",
+          "default": "",
+          "description": "programmers CLI 실행 파일 경로. 비워두면 PATH와 워크스페이스의 programmers-cli/build/install 디렉터리에서 자동으로 찾습니다."
+        },
+        "programmers.outputPath": {
+          "type": "string",
+          "default": "",
+          "description": "Solution.java / SolutionTest.java를 생성할 기준 경로. 워크스페이스 루트 기준 상대 경로이며, 비워두면 워크스페이스 루트를 사용합니다."
+        },
+        "programmers.openSolutionAfterImport": {
+          "type": "boolean",
+          "default": true,
+          "description": "Import가 끝난 뒤 자동으로 Solution.java를 엽니다."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/vscode": "^1.85.0",
+    "typescript": "^5.4.0"
+  }
+}

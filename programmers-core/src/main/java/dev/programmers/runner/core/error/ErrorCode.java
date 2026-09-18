@@ -1,0 +1,6 @@
+package dev.programmers.runner.core.error;
+
+public enum ErrorCode {
+    INVALID_URL, FETCH_FAILED, UNSUPPORTED_PROBLEM, SIGNATURE_PARSE_FAILED,
+    EXAMPLE_PARSE_FAILED, FILE_ALREADY_EXISTS, FILE_WRITE_FAILED
+}

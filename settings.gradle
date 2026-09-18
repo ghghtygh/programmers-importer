@@ -1,0 +1,2 @@
+rootProject.name = 'programmers-local-runner'
+include 'programmers-core', 'programmers-cli'

@@ -1,0 +1,11 @@
+.gradle/
+**/build/
+.idea/
+*.iml
+.DS_Store
+.local-fixtures/
+
+node_modules/
+programmers-vscode/out/
+*.vsix
+.claude/

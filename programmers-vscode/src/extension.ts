@@ -54,25 +54,36 @@ async function importProblem(url: string, force = false): Promise<void> {
     const outputPath = resolveOutputPath(workspaceRoot);
     const problemId = extractProblemId(url);
 
-    const result = await vscode.window.withProgress(
-        {
-            location: vscode.ProgressLocation.Notification,
-            title: `Programmers 문제 ${problemId ?? ''} 불러오는 중...`
-        },
-        () => runImport(cliPath, url, outputPath, force)
-    );
+    try {
+        const result = await vscode.window.withProgress(
+            {
+                location: vscode.ProgressLocation.Notification,
+                title: `Programmers 문제 ${problemId ?? ''} 불러오는 중...`
+            },
+            () => runImport(cliPath, url, outputPath, force)
+        );
 
-    if (result.code === 0) {
-        await onImportSuccess(result, outputPath);
-    } else {
-        await onImportFailure(result, url, outputPath, problemId);
+        if (result.code === 0) {
+            await onImportSuccess(result, outputPath);
+        } else {
+            await onImportFailure(result, url, outputPath, problemId);
+        }
+    } catch (error) {
+        const reason = error instanceof Error ? error.message : String(error);
+        vscode.window.showErrorMessage(`programmers CLI 실행에 실패했습니다: ${reason}`);
     }
 }
 
 async function resolveCliOrOfferBuild(workspaceRoot: string): Promise<string | undefined> {
+    const configuredCliPath = vscode.workspace.getConfiguration('programmers').get<string>('cliPath')?.trim();
     const found = findCli(workspaceRoot);
     if (found) {
         return found;
+    }
+    if (configuredCliPath) {
+        // findCli already showed a specific "cliPath를 찾을 수 없습니다" message; a Gradle
+        // build wouldn't fix a wrong setting, so stop here instead of piling on a second toast.
+        return undefined;
     }
 
     const gradlewName = process.platform === 'win32' ? 'gradlew.bat' : 'gradlew';

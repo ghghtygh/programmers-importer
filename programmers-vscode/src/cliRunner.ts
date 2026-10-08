@@ -18,9 +18,13 @@ export interface CliResult {
  * 3. PATH
  */
 export function findCli(workspaceRoot: string | undefined): string | undefined {
-    const configured = vscode.workspace.getConfiguration('programmers').get<string>('cliPath');
-    if (configured && configured.trim().length > 0) {
-        return configured.trim();
+    const configured = vscode.workspace.getConfiguration('programmers').get<string>('cliPath')?.trim();
+    if (configured) {
+        if (!fs.existsSync(configured)) {
+            vscode.window.showErrorMessage(`programmers.cliPath에 지정한 경로를 찾을 수 없습니다: ${configured}`);
+            return undefined;
+        }
+        return configured;
     }
 
     if (workspaceRoot) {

@@ -2,18 +2,52 @@
 
 [GitHub](https://github.com/ghghtygh/programmers-importer)
 
-프로그래머스 URL에서 Java 기본 코드와 공개 입출력 예제를 가져와 `Solution.java`, JUnit 5 매개변수화 테스트를 생성하는 CLI입니다.
+프로그래머스 문제 URL에서 Java 기본 코드와 공개 입출력 예제를 가져와 `Solution.java`, JUnit 5 매개변수화 테스트를 로컬에 자동 생성합니다. 풀이는 `Solution.java`에만 작성하면 되고, 테스트 코드를 직접 작성할 필요가 없습니다.
 
-## 빠른 시작
+```text
+문제 URL 복사 → Import 실행 → Solution.java 구현 → ./gradlew test
+```
 
-JDK 17 이상이 필요합니다. Gradle 8.13 Wrapper를 포함하며, 최초 빌드 시 인터넷 연결이 필요합니다. JDK 21에서 빌드·검증했습니다.
+CLI(`programmers-cli`)와 이를 감싼 VSCode 확장(`programmers-vscode`)을 함께 제공합니다. 어느 쪽을 쓰든 분석·생성 로직은 `programmers-core` 하나를 공유합니다.
 
-프로젝트 루트에서 실행합니다.
+## 설치
+
+### 요구 사항
+
+- JDK 17 이상 (JDK 21에서 빌드·검증)
+- 인터넷 연결 (최초 Gradle 빌드, 문제 페이지 조회 시)
+- Gradle은 저장소에 포함된 Wrapper(`./gradlew`)를 사용하므로 별도 설치가 필요 없습니다.
+
+### 1) CLI 빌드
+
+저장소를 클론한 뒤 루트에서 실행합니다.
 
 ```bash
 ./gradlew test :programmers-cli:installDist
 export PATH="$PWD/programmers-cli/build/install/programmers/bin:$PATH"
+```
 
+Windows에서는 `gradlew.bat`와 설치 디렉터리의 `programmers.bat`를 사용합니다(별도 검증은 하지 않았습니다).
+
+`programmers --version`이 출력되면 설치가 끝난 것입니다.
+
+### 2) VSCode 확장 (선택)
+
+CLI를 Command Palette에서 실행할 수 있게 해주는 얇은 래퍼입니다. 아직 Marketplace에 배포하지 않았으므로 소스에서 직접 실행합니다.
+
+```bash
+cd programmers-vscode
+npm install
+npm run compile
+```
+
+VSCode에서 `programmers-vscode` 폴더를 열고 `F5`(Run Extension)를 누르면 Extension Development Host 창이 뜹니다. 그 창에서 열려 있는 **워크스페이스**가 Solution.java/SolutionTest.java가 생성될 위치입니다. 자세한 설정은 [programmers-vscode/README.md](programmers-vscode/README.md)를 참고하세요.
+
+## 사용 가이드
+
+### CLI
+
+```bash
 programmers import \
   'https://school.programmers.co.kr/learn/courses/30/lessons/12909' \
   --output examples/java-workspace
@@ -27,19 +61,15 @@ examples/java-workspace/
 └── src/test/java/programmers/p12909/SolutionTest.java
 ```
 
-`Solution.java`에 풀이를 작성하고 프로젝트 루트에서 실행합니다.
+`Solution.java`에 풀이를 작성하고 실행합니다.
 
 ```bash
 ./gradlew -p examples/java-workspace test
 ```
 
-예제 워크스페이스의 JUnit 실행 환경은 이미 준비되어 있습니다. 생성 직후에는 기본 구현이 정답이 아니므로 일부 테스트가 실패하는 것이 정상입니다. 생성한 테스트 코드는 수정할 필요가 없습니다.
+생성 직후에는 기본 구현이 정답이 아니므로 일부 테스트가 실패하는 것이 정상입니다. **생성된 테스트 코드(`SolutionTest.java`)는 수정할 필요가 없습니다.**
 
-기존 Gradle Java 프로젝트에는 `--output /path/to/project`를 지정하세요. 해당 프로젝트에서 `./gradlew test` 또는 IDE의 JUnit 실행 기능을 사용하면 됩니다. 여러 Gradle 모듈이 있다면 Java 소스가 들어갈 **모듈 디렉터리**를 출력 경로로 지정합니다.
-
-Windows에서는 `gradlew.bat`와 배포 디렉터리의 `programmers.bat`를 사용합니다. Windows 실행은 별도로 검증하지 않았습니다.
-
-## CLI
+기존 Gradle Java 프로젝트에 적용하려면 `--output /path/to/project`처럼 Java 소스가 들어갈 **모듈 디렉터리**를 지정하세요.
 
 ```text
 programmers import <URL> [--output <경로>] [--force] [--debug]
@@ -53,11 +83,63 @@ programmers --version
 | `--force` | 해당 문제의 두 생성 파일을 덮어쓰기 |
 | `--debug` | 조회·시그니처 분석·예제 분석·생성 로그 및 오류 상세 출력 |
 
-URL에 다른 언어 쿼리나 fragment가 있어도 검증 후 Java 페이지를 요청합니다. HTTPS의 `school.programmers.co.kr/learn/courses/{courseId}/lessons/{problemId}` 형식만 지원합니다.
+URL은 HTTPS의 `school.programmers.co.kr/learn/courses/{courseId}/lessons/{problemId}` 형식만 지원합니다(다른 언어 쿼리나 fragment가 붙어도 검증 후 Java 페이지를 요청합니다).
 
-둘 중 하나라도 기존 파일이 있으면 기본적으로 실패하며 다른 파일도 생성하지 않습니다. `--force`는 작성한 풀이까지 교체하므로 재생성이 필요할 때 사용하세요. 생성 파일 준비 중 실패하면 기존 파일을 유지하고, 교체 중 입출력 오류가 발생하면 이미 변경한 파일의 복구를 시도합니다. 프로세스 강제 종료나 다른 프로세스의 동시 수정까지 보장하는 트랜잭션은 아닙니다.
+둘 중 하나라도 기존 파일이 있으면 기본적으로 실패하며 다른 파일도 생성하지 않습니다. `--force`는 작성한 풀이까지 교체하므로 재생성이 필요할 때만 사용하세요. 생성 파일 준비 중 실패하면 기존 파일을 유지하고, 교체 중 입출력 오류가 발생하면 이미 변경한 파일의 복구를 시도합니다. 프로세스 강제 종료나 다른 프로세스의 동시 수정까지 보장하는 트랜잭션은 아닙니다.
 
 종료 코드는 성공 `0`, Import 실패 `1`, 명령 사용 오류 `2`입니다.
+
+### VSCode 확장
+
+Command Palette(`Cmd+Shift+P` / `Ctrl+Shift+P`)에서 실행합니다.
+
+- **Programmers: Import Problem** — URL을 입력받아 Import
+- **Programmers: Import Problem from Clipboard** — 클립보드에 복사된 문제 URL을 바로 Import
+
+내부적으로 위 CLI를 그대로 호출합니다. 워크스페이스에서 `programmers` 실행 파일을 찾지 못하면 `./gradlew :programmers-cli:installDist` 빌드를 제안합니다. Import가 성공하면 `Solution.java`가 자동으로 열리고, 이미 생성된 문제라면 `Open` / `Overwrite` / `Cancel`을 선택할 수 있습니다. 설정(`programmers.cliPath`, `programmers.outputPath`, `programmers.openSolutionAfterImport`)은 [programmers-vscode/README.md](programmers-vscode/README.md)에 정리되어 있습니다.
+
+## 동작 원리
+
+```text
+문제 URL
+  │  ProblemUrl.parse — URL 검증, problemId 추출
+  ▼
+HTTP 조회 (ProblemFetcher)
+  │  language=java 지정, HTML 원문을 RawProblem으로 보관
+  ▼
+HTML 파싱 (ProblemParser)
+  │  Java 기본 코드에서 클래스/메서드/매개변수 타입 추출 (JavaParser 구문 트리)
+  │  "입출력 예" 표를 시그니처 컬럼명과 대조해 예제 값 추출
+  ▼
+Problem IR (중간 표현)
+  │  Problem / MethodSignature / Type / Value — HTML 구조와 독립된 모델
+  ▼
+코드 생성 (SolutionGenerator / JUnitTestGenerator)
+  │  Type → Java 타입 렌더링, Value → Java 리터럴/배열 렌더링
+  │  반환 타입에 맞는 assertEquals / assertArrayEquals 선택
+  ▼
+파일 쓰기 (SourceWriter)
+  │  경로 검증, 기존 파일 보호, 임시 파일 작성 후 교체, 실패 시 복구
+  ▼
+src/main/java/programmers/p{id}/Solution.java
+src/test/java/programmers/p{id}/SolutionTest.java
+```
+
+핵심 설계 원칙은 프로그래머스 HTML 구조를 **Problem IR**(중간 표현)로 한 번 변환한 뒤, 그 이후 단계(Java 코드 생성)는 HTML 구조를 전혀 알지 못하게 분리하는 것입니다.
+
+- 프로그래머스 페이지 구조가 바뀌어도 영향 범위는 `HtmlProblemParser`로 한정됩니다. Generator·Writer는 그대로 재사용됩니다.
+- `programmers-core`는 CLI나 VSCode API에 의존하지 않습니다. `ProblemImporter`가 Fetcher → Parser → Generator → Writer를 연결하며, 각 단계는 인터페이스로 교체할 수 있습니다. VSCode 확장은 이 core를 직접 쓰지 않고 CLI 프로세스를 실행하는 방식으로 더 얇게 분리되어 있습니다.
+- Value(`NumberValue`, `StringValue`, `ArrayValue` 등)와 Type(`PrimitiveType`, `ArrayType` 등)도 AST 형태의 모델로 다루기 때문에, 문자열을 직접 이어붙이지 않고 Java 리터럴로 렌더링합니다. 예: `[[1,2],[3,4]]` → `new int[][]{{1, 2}, {3, 4}}`.
+
+파서 세부 정책:
+
+1. HTTP 조회 시 `language=java`를 지정합니다. 연결 제한은 10초, 요청 제한은 30초입니다.
+2. Java 언어가 명시된 코드 요소와 원본 `initial_code`를 우선 사용합니다. 없으면 textarea 및 코드 블록을 검사합니다.
+3. JavaParser의 구문 트리에서 `Solution.solution`의 반환형·매개변수를 읽습니다. Java 기본 코드를 확보할 수 없으면 명시적으로 실패합니다.
+4. 표의 컬럼 이름을 시그니처와 대조하고 `입출력 예` 제목을 함께 확인합니다. 컬럼 순서가 달라도 이름으로 매칭하며, 후보 표가 모호하면 실패합니다.
+5. 예제 값을 JSON 형태의 값 트리로 변환한 뒤 시그니처의 타입·숫자 범위를 검증합니다. 문자열 내부 공백을 유지하고 Java 문자열 이스케이프를 적용합니다.
+
+페이지 구조가 바뀌면 `HtmlProblemParser`와 HTML fixture 테스트를 먼저 확인하세요. 요청이 차단되거나 로그인이 필요한 문제는 `FETCH_FAILED` 또는 파싱 오류로 보고합니다.
 
 ## 지원 범위
 
@@ -72,8 +154,6 @@ URL에 다른 언어 쿼리나 fragment가 있어도 검증 후 Java 페이지�
 `double`과 `double[]`은 JUnit의 정확한 값 비교를 사용합니다. 2차원 배열은 JUnit `assertArrayEquals(Object[], Object[])`의 중첩 비교를 사용합니다. 오차 허용 범위의 자동 추론은 하지 않습니다.
 
 로그인, 제출, 정답 조회, 숨겨진 테스트, 표준입출력형 `main` 문제, 제네릭·사용자 정의 타입·3차원 배열은 지원하지 않습니다.
-
-`programmers-vscode`는 이 CLI를 감싸는 VSCode 확장입니다. Command Palette에서 `Programmers: Import Problem` / `Programmers: Import Problem from Clipboard`를 실행할 수 있으며, 사용법은 [programmers-vscode/README.md](programmers-vscode/README.md)를 참고하세요.
 
 ## 기존 프로젝트의 Gradle 설정
 
@@ -91,6 +171,18 @@ dependencies {
 test { useJUnitPlatform() }
 ```
 
+## 오류 코드
+
+| 코드 | 의미 |
+| --- | --- |
+| `INVALID_URL` | 지원 URL 형식이 아님 |
+| `FETCH_FAILED` | 네트워크, 시간 초과, HTTP 또는 응답 형식 오류 |
+| `UNSUPPORTED_PROBLEM` | 지원하지 않는 Java 타입·문제 형태 |
+| `SIGNATURE_PARSE_FAILED` | Java 기본 코드나 단일 solution 메서드를 식별할 수 없음 |
+| `EXAMPLE_PARSE_FAILED` | 예제 표·값·타입·범위 불일치 |
+| `FILE_ALREADY_EXISTS` | 기존 생성 파일 존재 |
+| `FILE_WRITE_FAILED` | 경로·권한·파일 저장 오류 |
+
 ## 구조
 
 ```text
@@ -105,30 +197,6 @@ programmers-cli → programmers-core
 programmers-vscode        CLI를 감싸는 VSCode 확장 (npm/TypeScript, Gradle 빌드 대상 아님)
 examples/java-workspace   풀이용 Gradle 프로젝트
 ```
-
-Core에는 CLI 및 VSCode API 의존성이 없습니다. `ProblemImporter`가 단계들을 연결하며 Fetcher, Parser, Writer는 인터페이스로 교체할 수 있습니다.
-
-### 파서 정책
-
-1. HTTP 조회 시 `language=java`를 지정합니다. 연결 제한은 10초, 요청 제한은 30초입니다.
-2. Java 언어가 명시된 코드 요소와 원본 `initial_code`를 우선 사용합니다. 없으면 textarea 및 코드 블록을 검사합니다.
-3. JavaParser의 구문 트리에서 `Solution.solution`의 반환형·매개변수를 읽습니다. Java 기본 코드를 확보할 수 없으면 명시적으로 실패합니다. 설명문에서 타입을 추측하는 기능은 후속 확장 지점입니다.
-4. 표의 컬럼 이름을 시그니처와 대조하고 `입출력 예` 제목을 함께 확인합니다. 컬럼 순서가 달라도 이름으로 매칭하며, 후보 표가 모호하면 실패합니다.
-5. 예제 값을 JSON 형태의 값 트리로 변환한 뒤 시그니처의 타입·숫자 범위를 검증합니다. 문자열 내부 공백을 유지하고 Java 문자열 이스케이프를 적용합니다.
-
-페이지 구조가 바뀌면 `HtmlProblemParser`와 HTML fixture 테스트를 먼저 확인하세요. 요청이 차단되거나 로그인이 필요한 문제는 `FETCH_FAILED` 또는 파싱 오류로 보고합니다.
-
-## 오류 코드
-
-| 코드 | 의미 |
-| --- | --- |
-| `INVALID_URL` | 지원 URL 형식이 아님 |
-| `FETCH_FAILED` | 네트워크, 시간 초과, HTTP 또는 응답 형식 오류 |
-| `UNSUPPORTED_PROBLEM` | 지원하지 않는 Java 타입·문제 형태 |
-| `SIGNATURE_PARSE_FAILED` | Java 기본 코드나 단일 solution 메서드를 식별할 수 없음 |
-| `EXAMPLE_PARSE_FAILED` | 예제 표·값·타입·범위 불일치 |
-| `FILE_ALREADY_EXISTS` | 기존 생성 파일 존재 |
-| `FILE_WRITE_FAILED` | 경로·권한·파일 저장 오류 |
 
 ## 검증
 

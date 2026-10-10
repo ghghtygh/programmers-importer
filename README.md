@@ -98,6 +98,86 @@ Command Palette(`Cmd+Shift+P` / `Ctrl+Shift+P`)에서 실행합니다.
 
 내부적으로 위 CLI를 그대로 호출합니다. 워크스페이스에서 `programmers` 실행 파일을 찾지 못하면 `./gradlew :programmers-cli:installDist` 빌드를 제안합니다. Import가 성공하면 `Solution.java`가 자동으로 열리고, 이미 생성된 문제라면 `Open` / `Overwrite` / `Cancel`을 선택할 수 있습니다. 설정(`programmers.cliPath`, `programmers.outputPath`, `programmers.openSolutionAfterImport`)은 [programmers-vscode/README.md](programmers-vscode/README.md)에 정리되어 있습니다.
 
+## 예시
+
+아래는 실제 문제를 Import했을 때 생성되는 파일 그대로입니다(수동으로 손대지 않았습니다).
+
+### [12909. 올바른 괄호](https://school.programmers.co.kr/learn/courses/30/lessons/12909) — `String → boolean`
+
+```bash
+programmers import 'https://school.programmers.co.kr/learn/courses/30/lessons/12909' --output examples/java-workspace
+```
+
+`src/main/java/programmers/p12909/Solution.java` — 프로그래머스가 제공하는 Java 기본 코드(주석 포함)를 그대로 유지하고 패키지만 추가합니다. 사용자는 `// 구현` 부분만 채우면 됩니다.
+
+```java
+package programmers.p12909;
+
+public class Solution {
+
+    boolean solution(String s) {
+        boolean answer = true;
+        // [실행] 버튼을 누르면 출력 값을 볼 수 있습니다.
+        System.out.println("Hello Java");
+        return answer;
+    }
+}
+```
+
+`src/test/java/programmers/p12909/SolutionTest.java` — 문제 페이지의 입출력 예 4건이 그대로 `@ParameterizedTest`가 됩니다. `boolean` 반환이므로 `assertEquals`를 사용합니다.
+
+```java
+package programmers.p12909;
+
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import java.util.stream.Stream;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class SolutionTest {
+
+    @ParameterizedTest(name = "공개 예제 {index}")
+    @MethodSource("examples")
+    void matchesExample(String s, boolean expected) throws Exception {
+        assertEquals(expected, new Solution().solution(s));
+    }
+
+    static Stream<Arguments> examples() {
+        return Stream.of(
+            Arguments.of(new Object[]{"()()", true}),
+            Arguments.of(new Object[]{"(())()", true}),
+            Arguments.of(new Object[]{")()(", false}),
+            Arguments.of(new Object[]{"(()(", false})
+        );
+    }
+}
+```
+
+### [468381. 기차 선로](https://school.programmers.co.kr/learn/courses/30/lessons/468381) — `int[][] → int`
+
+매개변수가 2차원 배열인 문제는 "동작 원리"에서 설명한 Value AST를 거쳐 중첩 배열 리터럴로 렌더링됩니다.
+
+```java
+public int solution(int[][] grid) {
+    int answer = 0;
+    return answer;
+}
+```
+
+생성된 테스트의 `examples()`는 문제 페이지 표의 `[[1,0,-1],[0,0,7],[0,0,2]]`가 그대로 `new int[][]{...}`로 바뀐 것을 보여줍니다(6개 예제 중 2개만 발췌).
+
+```java
+static Stream<Arguments> examples() {
+    return Stream.of(
+        Arguments.of(new Object[]{new int[][]{new int[]{1, 0, -1}, new int[]{0, 0, 7}, new int[]{0, 0, 2}}, 2}),
+        Arguments.of(new Object[]{new int[][]{new int[]{1, 0, 0, 0, 0, -1, -1}, new int[]{-1, 0, 0, 1, 0, 0, 1}}, 2})
+        // ... 나머지 4개 생략
+    );
+}
+```
+
 ## 동작 원리
 
 ```text

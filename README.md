@@ -10,6 +10,16 @@
 
 CLI(`programmers-cli`)와 이를 감싼 VSCode 확장(`programmers-vscode`)을 함께 제공합니다. 어느 쪽을 쓰든 분석·생성 로직은 `programmers-core` 하나를 공유합니다.
 
+## VSCode 시연
+
+실제 VSCode 확장 개발 호스트에서 [12909. 올바른 괄호](https://school.programmers.co.kr/learn/courses/30/lessons/12909)를 가져와 풀이와 테스트를 생성하고, 풀이 구현 후 공개 예제 4개를 통과하는 과정입니다.
+
+![VSCode에서 문제 URL 입력, Java 풀이·JUnit 테스트 자동 생성, 기존 파일 보호, 풀이 구현 및 테스트 성공까지의 시연](docs/media/vscode-demo.gif)
+
+`Import Problem` 실행 → URL 입력 → `Solution.java` 자동 열기 → JUnit 테스트 확인 → 클립보드로 중복 문제 가져오기 → 풀이 구현 → Gradle 테스트 성공
+
+GIF는 실제 실행 화면의 주요 단계를 이어 붙이고 한국어 자막을 추가한 것입니다. 검증 환경과 결과는 [VSCode 시연 검증 기록](docs/vscode-demo.md)을 참고하세요.
+
 ## 설치
 
 ### 요구 사항

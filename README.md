@@ -10,6 +10,16 @@
 
 CLI(`programmers-cli`)와 이를 감싼 VSCode 확장(`programmers-vscode`)을 함께 제공합니다. 어느 쪽을 쓰든 분석·생성 로직은 `programmers-core` 하나를 공유합니다.
 
+## VSCode 시연
+
+실제 VSCode 확장 개발 호스트에서 [12909. 올바른 괄호](https://school.programmers.co.kr/learn/courses/30/lessons/12909)를 가져와 풀이와 테스트를 생성하고, 풀이 구현 후 공개 예제 4개를 통과하는 과정입니다.
+
+![VSCode에서 문제 URL 입력, Java 풀이·JUnit 테스트 자동 생성, 기존 파일 보호, 풀이 구현 및 테스트 성공까지의 시연](docs/media/vscode-demo.gif)
+
+`Import Problem` 실행 → URL 입력 → `Solution.java` 자동 열기 → JUnit 테스트 확인 → 클립보드로 중복 문제 가져오기 → 풀이 구현 → Gradle 테스트 성공
+
+GIF는 실제 실행 화면의 주요 단계를 이어 붙이고 한국어 자막을 추가한 것입니다. 검증 환경과 결과는 [VSCode 시연 검증 기록](docs/vscode-demo.md)을 참고하세요.
+
 ## 설치
 
 ### 요구 사항
@@ -100,15 +110,25 @@ Command Palette(`Cmd+Shift+P` / `Ctrl+Shift+P`)에서 실행합니다.
 
 ## 예시
 
-아래는 실제 문제를 Import했을 때 생성되는 파일 그대로입니다(수동으로 손대지 않았습니다).
+GIF와 동일한 [12909. 올바른 괄호](https://school.programmers.co.kr/learn/courses/30/lessons/12909) 문제로, Java 기본 코드와 테스트 생성부터 풀이 구현 및 공개 예제 4개 통과까지 살펴봅니다. 시그니처는 `String → boolean`입니다.
 
-### [12909. 올바른 괄호](https://school.programmers.co.kr/learn/courses/30/lessons/12909) — `String → boolean`
+### 1) 문제 가져오기
+
+VSCode 명령 팔레트에서 `Programmers: Import Problem`을 실행하고 다음 URL을 입력합니다.
+
+```text
+https://school.programmers.co.kr/learn/courses/30/lessons/12909
+```
+
+CLI에서도 같은 문제를 가져올 수 있습니다.
 
 ```bash
 programmers import 'https://school.programmers.co.kr/learn/courses/30/lessons/12909' --output examples/java-workspace
 ```
 
-`src/main/java/programmers/p12909/Solution.java` — 프로그래머스가 제공하는 Java 기본 코드(주석 포함)를 그대로 유지하고 패키지만 추가합니다. 사용자는 `// 구현` 부분만 채우면 됩니다.
+### 2) 생성된 풀이와 테스트 확인
+
+`src/main/java/programmers/p12909/Solution.java` — 프로그래머스가 제공하는 Java 기본 코드의 본문과 주석을 유지하며 패키지를 추가하고 클래스를 공개 처리합니다. Import가 끝나면 VSCode에서 이 파일이 자동으로 열립니다.
 
 ```java
 package programmers.p12909;
@@ -155,27 +175,44 @@ class SolutionTest {
 }
 ```
 
-### [468381. 기차 선로](https://school.programmers.co.kr/learn/courses/30/lessons/468381) — `int[][] → int`
+기본 코드는 항상 `true`를 반환하므로 공개 예제 3·4가 실패합니다. 같은 URL을 클립보드에 복사한 뒤 `Programmers: Import Problem from Clipboard`를 실행하면 기존 파일을 보호하기 위해 `Open` / `Overwrite` / `Cancel` 선택지가 표시됩니다. GIF처럼 `Open`을 선택하면 기존 풀이를 이어서 작성할 수 있습니다.
 
-매개변수가 2차원 배열인 문제는 "동작 원리"에서 설명한 Value AST를 거쳐 중첩 배열 리터럴로 렌더링됩니다.
+### 3) Solution.java에 풀이 구현
+
+생성된 `SolutionTest.java`는 유지하고 `Solution.java`만 아래처럼 수정합니다. GIF에서 작성한 풀이와 동일합니다.
 
 ```java
-public int solution(int[][] grid) {
-    int answer = 0;
-    return answer;
+package programmers.p12909;
+
+public class Solution {
+
+    boolean solution(String s) {
+        int balance = 0;
+        for (char ch : s.toCharArray()) {
+            balance += ch == '(' ? 1 : -1;
+            if (balance < 0) {
+                return false;
+            }
+        }
+        return balance == 0;
+    }
 }
 ```
 
-생성된 테스트의 `examples()`는 문제 페이지 표의 `[[1,0,-1],[0,0,7],[0,0,2]]`가 그대로 `new int[][]{...}`로 바뀐 것을 보여줍니다(6개 예제 중 2개만 발췌).
+### 4) 공개 예제 테스트 실행
 
-```java
-static Stream<Arguments> examples() {
-    return Stream.of(
-        Arguments.of(new Object[]{new int[][]{new int[]{1, 0, -1}, new int[]{0, 0, 7}, new int[]{0, 0, 2}}, 2}),
-        Arguments.of(new Object[]{new int[][]{new int[]{1, 0, 0, 0, 0, -1, -1}, new int[]{-1, 0, 0, 1, 0, 0, 1}}, 2})
-        // ... 나머지 4개 생략
-    );
-}
+저장소 루트에서 예제 프로젝트의 테스트를 실행합니다.
+
+```bash
+./gradlew -p examples/java-workspace test
+```
+
+GIF에서는 별도 풀이 프로젝트에 Gradle Wrapper를 복사해 VSCode 터미널에서 `./gradlew test --rerun-tasks --console=plain`을 실행했습니다. 위 풀이를 적용하면 공개 예제 4개가 모두 통과하며 다음 성공 메시지가 표시됩니다(출력 일부 발췌).
+
+```text
+> Task :test
+
+BUILD SUCCESSFUL
 ```
 
 ## 동작 원리
